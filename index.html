@@ -276,6 +276,10 @@
             <button class="btn btn-secondary" onclick="copyStats()">📋 Copy Stats</button>
             <button class="btn btn-secondary" onclick="exportText()">💾 Export</button>
             <button class="btn btn-secondary" onclick="toggleCase()">🔄 Toggle Case</button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="number" id="charCountInput" placeholder="Enter char count" min="1" style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; width: 150px;">
+                <button class="btn btn-secondary" onclick="generateRandom()">🎲 Generate Random</button>
+            </div>
         </div>
     </div>
 
@@ -329,7 +333,7 @@
                 <span class="stat-row-value" id="avgSentenceLength">0 words</span>
             </div>
             <div class="stat-row">
-                <span class="stat-row-label">Unique Words</span>
+                <span class="stat-row-label">Unique Words</span> 
                 <span class="stat-row-value" id="uniqueWords">0</span>
             </div>
             <div class="stat-row">
@@ -571,6 +575,33 @@ function toggleCase() {
         caseState = 'normal';
     }
     
+    analyzeText();
+}
+
+function generateRandom() {
+    let charCount = parseInt(document.getElementById('charCountInput').value);
+    
+    // If input is empty, use the current character count from stats
+    if (!charCount || charCount <= 0) {
+        charCount = parseInt(document.getElementById('charCount').textContent);
+    }
+    
+    if (charCount === 0 || isNaN(charCount)) {
+        alert('Please enter a character count or analyze some text first!');
+        return;
+    }
+    
+    // Generate random characters matching the count
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+    let randomText = '';
+    
+    for (let i = 0; i < charCount; i++) {
+        randomText += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    document.getElementById('textInput').value = randomText;
+    document.getElementById('charCountInput').value = charCount;
+    caseState = 'normal';
     analyzeText();
 }
 
