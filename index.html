@@ -181,6 +181,16 @@
         .gen-input::placeholder { color: var(--text-dim); }
         .gen-input:focus { outline: none; border-color: var(--border-hover); }
 
+        select.gen-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23666672'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+            padding-right: 32px;
+        }
+
         /* Stats pane */
         .stats-pane {
             display: flex;
@@ -383,7 +393,19 @@
             <button class="btn" onclick="clearText()">Clear</button>
             <div class="toolbar-sep"></div>
             <input class="gen-input" type="number" id="charCountInput" placeholder="Char count…" min="1">
-            <button class="btn" onclick="generateRandom()">Generate random</button>
+            <select class="gen-input" id="genMode">
+                <option value="text">Text only</option>
+                <option value="numbers">Numbers only</option>
+                <option value="mixed">Text + Numbers</option>
+            </select>
+            <select class="gen-input" id="genCase">
+                <option value="sentence">Sentence case</option>
+                <option value="lowercase">lowercase</option>
+                <option value="uppercase">UPPERCASE</option>
+                <option value="title">Title Case</option>
+                <option value="simple">Simple</option>
+            </select>
+            <button class="btn" onclick="generateRandom()">Generate</button>
         </div>
     </div>
 
@@ -605,28 +627,114 @@ function generateRandom() {
     if (!count || count <= 0) count = parseInt(document.getElementById('charCount').textContent.replace(/,/g,''));
     if (!count || isNaN(count) || count <= 0) { toast('Enter a char count'); return; }
 
+    const mode = document.getElementById('genMode').value;
+    const caseMode = document.getElementById('genCase').value;
+    
+    let text = '';
+    
+    if (mode === 'numbers') {
+        text = generateNumbers(count);
+    } else if (mode === 'mixed') {
+        text = generateMixed(count);
+    } else {
+        text = generateText(count); // text only (default)
+    }
+    
+    text = applyCaseMode(text, caseMode);
+    
+    document.getElementById('textInput').value = text;
+    caseState = 'normal';
+    analyzeText();
+    toast('Generated '+fmt(count)+' chars (' + mode + ', ' + caseMode + ')');
+}
+
+function generateNumbers(count) {
+    let result = '';
+    while (result.length < count) {
+        const segmentLen = Math.floor(Math.random() * 8) + 3;
+        let segment = '';
+        for (let i = 0; i < segmentLen; i++) {
+            segment += Math.floor(Math.random() * 10);
+        }
+        if (result.length > 0) result += ' ';
+        result += segment;
+    }
+    return result.slice(0, count);
+}
+
+function generateMixed(count) {
+    const vowels = 'aeiou';
+    const consonants = 'bcdfghjklmnpqrstvwxyz';
+    const numbers = '0123456789';
+    const wordList = [];
+    let chars = 0;
+    
+    while (chars < count) {
+        if (Math.random() < 0.15) {
+            // Generate a number
+            const numLen = Math.floor(Math.random() * 4) + 2;
+            let num = '';
+            for (let i = 0; i < numLen; i++) {
+                num += numbers[Math.floor(Math.random() * numbers.length)];
+            }
+            wordList.push(num);
+            chars += num.length + 1;
+        } else {
+            // Generate a word
+            const wlen = Math.floor(Math.random() * 7) + 2;
+            let w = '';
+            for (let i = 0; i < wlen; i++) {
+                w += i % 2 === 0 ? consonants[Math.floor(Math.random() * consonants.length)] : vowels[Math.floor(Math.random() * vowels.length)];
+            }
+            wordList.push(w);
+            chars += w.length + 1;
+        }
+        if (chars >= count) break;
+    }
+    
+    return wordList.join(' ').slice(0, count);
+}
+
+function generateText(count) {
     const vowels = 'aeiou';
     const consonants = 'bcdfghjklmnpqrstvwxyz';
     const wordList = [];
     let chars = 0;
+    
     while (chars < count) {
-        const wlen = Math.floor(Math.random()*7)+2;
+        const wlen = Math.floor(Math.random() * 7) + 2;
         let w = '';
-        for (let i=0; i<wlen; i++) {
-            w += i%2===0 ? consonants[Math.floor(Math.random()*consonants.length)] : vowels[Math.floor(Math.random()*vowels.length)];
+        for (let i = 0; i < wlen; i++) {
+            w += i % 2 === 0 ? consonants[Math.floor(Math.random() * consonants.length)] : vowels[Math.floor(Math.random() * vowels.length)];
         }
-        if (Math.random()<0.08) w = w[0].toUpperCase()+w.slice(1);
         wordList.push(w);
         chars += w.length + 1;
         if (chars >= count) break;
     }
+    
     let text = wordList.join(' ').slice(0, count);
+    // Add some punctuation
     text = text.replace(/(\w{20,35})\s/g, '$1. ');
+    return text;
+}
 
-    document.getElementById('textInput').value = text;
-    caseState = 'normal';
-    analyzeText();
-    toast('Generated '+fmt(count)+' chars');
+function applyCaseMode(text, caseMode) {
+    switch(caseMode) {
+        case 'uppercase':
+            return text.toUpperCase();
+        case 'lowercase':
+            return text.toLowerCase();
+        case 'title':
+            return text.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
+        case 'sentence':
+            // Capitalize first letter of sentences
+            return text.replace(/(^|\.\s+)([a-z])/g, (m, prefix, letter) => prefix + letter.toUpperCase()).replace(/^(.)/, m => m.toUpperCase());
+        case 'simple':
+            // All lowercase except first character
+            return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+        default:
+            return text;
+    }
 }
 
 analyzeText();
