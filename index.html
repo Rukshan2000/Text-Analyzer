@@ -3,27 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TextLens — Advanced Analyzer</title>
+    <title>TextLens Pro — QA & Dev Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0a0b;
-            --surface: #111113;
-            --surface-2: #161618;
-            --surface-3: #1c1c1f;
-            --border: #222226;
-            --border-hover: #333338;
-            --text: #e8e8ea;
-            --text-muted: #666672;
-            --text-dim: #3a3a44;
-            --accent: #e2ff5a;
-            --accent-dim: rgba(226, 255, 90, 0.07);
-            --accent-dim-hover: rgba(226, 255, 90, 0.13);
-            --accent-border: rgba(226, 255, 90, 0.18);
-            --mono: 'DM Mono', monospace;
-            --sans: 'Syne', sans-serif;
-            --serif: 'Instrument Serif', serif;
+            --bg: #0d0d0f;
+            --surface: #141416;
+            --surface-2: #1a1a1d;
+            --surface-3: #222226;
+            --surface-hover: #2a2a2e;
+            --border: #2d2d32;
+            --border-hover: #404048;
+            --border-accent: #4a4a52;
+            --text: #f0f0f5;
+            --text-muted: #8a8a95;
+            --text-dim: #5a5a65;
+            --accent: #00d9a3;
+            --accent-dim: rgba(0, 217, 163, 0.08);
+            --accent-hover: rgba(0, 217, 163, 0.15);
+            --accent-glow: rgba(0, 217, 163, 0.25);
+            --warning: #ffb347;
+            --error: #ff6b6b;
+            --info: #6bb5ff;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Inter', sans-serif;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius: 8px;
+            --radius-sm: 4px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,711 +40,1442 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            line-height: 1.5;
         }
 
+        /* Subtle grid pattern */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
             pointer-events: none;
             z-index: 9999;
         }
 
-        .layout {
+        .app {
             display: grid;
-            grid-template-rows: 56px 1fr;
-            grid-template-columns: 1fr 320px;
+            grid-template-rows: auto 1fr;
             height: 100vh;
             overflow: hidden;
         }
 
-        header {
-            grid-column: 1 / -1;
+        /* Header - Compact & Functional */
+        .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 32px;
+            padding: 12px 20px;
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
-            background: var(--bg);
+            gap: 16px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-shrink: 0;
         }
 
-        .brand-name {
-            font-family: var(--serif);
-            font-style: italic;
-            font-size: 1.25rem;
-            letter-spacing: -0.01em;
-        }
-
-        .brand-dot {
-            width: 5px; height: 5px;
-            border-radius: 50%;
+        .brand-icon {
+            width: 28px;
+            height: 28px;
             background: var(--accent);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--mono);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--bg);
+        }
+
+        .brand-text {
+            font-family: var(--sans);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
         }
 
         .brand-tag {
             font-family: var(--mono);
             font-size: 0.6rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-
-        .header-right { display: flex; gap: 6px; align-items: center; }
-
-        .btn {
-            font-family: var(--mono);
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            padding: 7px 14px;
+            color: var(--text-dim);
+            background: var(--surface-2);
+            padding: 2px 6px;
             border-radius: 3px;
             border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all 0.15s;
-            background: transparent;
+        }
+
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 6px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: var(--sans);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface-2);
             color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             white-space: nowrap;
         }
 
-        .btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface-2); }
-
-        .btn-accent {
-            background: var(--accent);
-            color: #0a0a0b;
-            border-color: var(--accent);
-            font-weight: 500;
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-hover);
+            color: var(--text);
+            transform: translateY(-1px);
         }
 
-        .btn-accent:hover { background: #ecff80; border-color: #ecff80; color: #0a0a0b; }
+        .btn:active {
+            transform: translateY(0);
+        }
 
-        .editor-pane {
-            padding: 28px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            border-right: 1px solid var(--border);
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #00e6b0;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .btn-icon {
+            padding: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Main Layout */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
             overflow: hidden;
         }
 
-        .pane-label {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--text-dim);
+        /* Editor Section */
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            background: var(--bg);
         }
 
-        .editor-wrapper { position: relative; flex: 1; }
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .editor-toolbar::-webkit-scrollbar { display: none; }
+
+        .toolbar-group {
+            display: flex;
+            gap: 4px;
+            padding-right: 12px;
+            border-right: 1px solid var(--border);
+            margin-right: 4px;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+            padding-right: 0;
+            margin-right: 0;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+            padding: 16px;
+        }
 
         textarea {
             width: 100%;
             height: 100%;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 4px;
+            border-radius: var(--radius);
             color: var(--text);
             font-family: var(--mono);
             font-size: 0.875rem;
-            line-height: 1.9;
+            line-height: 1.7;
             padding: 20px;
             resize: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
             caret-color: var(--accent);
+            tab-size: 2;
         }
 
-        textarea::placeholder { color: var(--text-dim); font-style: italic; }
-        textarea:focus { outline: none; border-color: var(--border-hover); }
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
 
-        .editor-counter {
+        textarea::placeholder { color: var(--text-dim); }
+
+        .editor-status {
             position: absolute;
-            bottom: 12px; right: 14px;
-            font-family: var(--mono);
-            font-size: 0.65rem;
-            color: var(--text-dim);
-        }
-
-        .toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-
-        .toolbar-sep { width: 1px; height: 22px; background: var(--border); margin: 0 4px; }
-
-        .gen-input {
+            bottom: 28px;
+            right: 28px;
+            display: flex;
+            gap: 12px;
             font-family: var(--mono);
             font-size: 0.7rem;
-            background: var(--surface);
+            color: var(--text-dim);
+            background: rgba(13, 13, 15, 0.9);
+            padding: 6px 12px;
+            border-radius: 20px;
             border: 1px solid var(--border);
-            border-radius: 3px;
-            color: var(--text);
-            padding: 7px 12px;
-            width: 120px;
-            transition: border-color 0.15s;
+            backdrop-filter: blur(4px);
         }
 
-        .gen-input::placeholder { color: var(--text-dim); }
-        .gen-input:focus { outline: none; border-color: var(--border-hover); }
-
-        select.gen-input {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23666672'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 16px;
-            padding-right: 32px;
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        /* Stats pane */
-        .stats-pane {
+        .status-item.accent {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
             display: flex;
             flex-direction: column;
+            background: var(--surface);
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
         }
 
-        .stats-pane::-webkit-scrollbar { width: 3px; }
-        .stats-pane::-webkit-scrollbar-thumb { background: var(--border); }
+        .stats-panel::-webkit-scrollbar { width: 4px; }
+        .stats-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-        .reading-hero {
-            padding: 24px 24px 20px;
+        /* Hero Stats - Quick Glance */
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
             border-bottom: 1px solid var(--border);
-            background: var(--surface);
-            flex-shrink: 0;
         }
 
-        .reading-hero-eyebrow {
+        .hero-card {
+            background: var(--surface);
+            padding: 20px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .hero-card:hover::before {
+            opacity: 1;
+        }
+
+        .hero-card:hover {
+            background: var(--surface-2);
+        }
+
+        .hero-value {
             font-family: var(--mono);
-            font-size: 0.58rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--text-dim);
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1;
             margin-bottom: 6px;
         }
 
-        .reading-hero-val {
-            font-family: var(--serif);
-            font-style: italic;
-            font-size: 2.6rem;
+        .hero-value.accent {
             color: var(--accent);
-            line-height: 1;
-            letter-spacing: -0.02em;
         }
 
-        .reading-hero-note {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            margin-top: 5px;
+        .hero-label {
+            font-family: var(--sans);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
+        /* Stats Sections */
         .stats-section {
-            padding: 18px 24px;
+            padding: 16px;
             border-bottom: 1px solid var(--border);
         }
 
-        .stats-section:last-child { border-bottom: none; }
-
-        .section-title {
-            font-family: var(--mono);
-            font-size: 0.58rem;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: var(--text-dim);
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 12px;
         }
 
-        .primary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2px;
-        }
-
-        .metric-card {
-            background: var(--surface-2);
-            padding: 12px 14px;
-            transition: background 0.12s;
-        }
-
-        .metric-card:hover { background: var(--surface-3); }
-        .metric-card:nth-child(1) { border-radius: 3px 0 0 0; }
-        .metric-card:nth-child(2) { border-radius: 0 3px 0 0; }
-        .metric-card:nth-last-child(2) { border-radius: 0 0 0 3px; }
-        .metric-card:last-child { border-radius: 0 0 3px 0; }
-
-        .metric-val {
-            font-family: var(--mono);
-            font-size: 1.45rem;
-            font-weight: 500;
-            color: var(--text);
-            line-height: 1;
-            margin-bottom: 4px;
-            letter-spacing: -0.02em;
-        }
-
-        .metric-lbl {
-            font-family: var(--mono);
-            font-size: 0.57rem;
-            letter-spacing: 0.1em;
+        .section-title {
+            font-family: var(--sans);
+            font-size: 0.7rem;
+            font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-badge {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 3px;
             color: var(--text-dim);
         }
 
-        .stat-row {
+        /* Detail Grid */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .detail-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 7px 0;
-            border-bottom: 1px solid var(--border);
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            transition: all 0.15s;
         }
 
-        .stat-row:last-child { border-bottom: none; }
+        .detail-item:hover {
+            border-color: var(--border-hover);
+            background: var(--surface-3);
+        }
 
-        .stat-row-k {
-            font-family: var(--mono);
-            font-size: 0.68rem;
+        .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            font-family: var(--sans);
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
 
-        .stat-row-v {
+        .detail-value {
             font-family: var(--mono);
-            font-size: 0.68rem;
+            font-size: 0.8rem;
             color: var(--text);
-            max-width: 110px;
+            font-weight: 500;
+        }
+
+        .detail-value.accent {
+            color: var(--accent);
+        }
+
+        .detail-value.warning {
+            color: var(--warning);
+        }
+
+        /* Progress Bars for Visual Feedback */
+        .metric-bar {
+            width: 100%;
+            height: 3px;
+            background: var(--surface-3);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Word Analysis */
+        .word-analysis {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .word-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .word-rank {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            width: 20px;
+            text-align: center;
+        }
+
+        .word-text {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--text);
+            flex: 1;
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .word-count {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+            min-width: 30px;
             text-align: right;
         }
 
-        .stat-row-v.hi { color: var(--accent); }
-
-        .word-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-
-        .chip {
-            font-family: var(--mono);
-            font-size: 0.65rem;
-            padding: 4px 9px;
+        .word-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
             background: var(--accent-dim);
-            color: var(--accent);
-            border: 1px solid var(--accent-border);
-            border-radius: 2px;
-            transition: background 0.12s;
+            border-radius: var(--radius-sm);
+            z-index: 0;
+            opacity: 0.5;
         }
 
-        .chip:hover { background: var(--accent-dim-hover); }
-        .chip-n { color: rgba(226,255,90,0.38); margin-left: 3px; }
+        .word-bar {
+            position: relative;
+            z-index: 1;
+        }
 
-        .empty {
-            font-family: var(--mono);
-            font-size: 0.68rem;
+        .word-bar > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
             color: var(--text-dim);
-            font-style: italic;
         }
 
+        .empty-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-family: var(--sans);
+            font-size: 0.85rem;
+        }
+
+        /* Generator Panel */
+        .generator-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 280px;
+            z-index: 100;
+        }
+
+        .generator-panel.show {
+            display: flex;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .panel-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s;
+        }
+
+        .panel-close:hover {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-label {
+            font-family: var(--sans);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-field {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            padding: 8px 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            width: 100%;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        select.input-field {
+            cursor: pointer;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(8px);
+            right: 20px;
             background: var(--surface-3);
             border: 1px solid var(--border-hover);
-            padding: 10px 20px;
-            border-radius: 3px;
-            font-family: var(--mono);
-            font-size: 0.72rem;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            font-family: var(--sans);
+            font-size: 0.85rem;
             color: var(--text);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
             opacity: 0;
-            transition: all 0.22s;
-            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10000;
         }
 
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
 
-        @media (max-width: 800px) {
-            .layout { grid-template-columns: 1fr; grid-template-rows: 56px auto auto; height: auto; overflow: visible; }
-            .editor-pane { height: 60vh; border-right: none; border-bottom: 1px solid var(--border); }
-            .stats-pane { overflow-y: visible; }
+        .toast-icon {
+            color: var(--accent);
+        }
+
+        /* Keyboard shortcuts hint */
+        .kbd {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+            .stats-panel { max-height: 40vh; border-top: 1px solid var(--border); }
+            .hero-stats { grid-template-columns: repeat(3, 1fr); }
+            .generator-panel { left: 10px; right: 10px; bottom: 10px; min-width: auto; }
+        }
+
+        /* Find/Replace Bar */
+        .find-bar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .find-bar.show {
+            display: flex;
+        }
+
+        .find-input {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            padding: 6px 10px;
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            width: 200px;
+        }
+
+        .find-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .find-stats {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
         }
     </style>
 </head>
 <body>
-<div class="layout">
+    <div class="app">
+        <header class="header">
+            <div class="brand">
+                <div class="brand-icon">TL</div>
+                <span class="brand-text">TextLens</span>
+                <span class="brand-tag">PRO</span>
+            </div>
+            
+            <div class="header-center">
+                <div class="quick-actions">
+                    <button class="btn btn-icon" onclick="toggleGenerator()" title="Generate Text (G)">⚡</button>
+                    <button class="btn" onclick="analyzeText()" title="Re-analyze (Ctrl+Enter)">
+                        <span>Analyze</span>
+                    </button>
+                    <button class="btn" onclick="toggleFind()" title="Find (Ctrl+F)">
+                        <span>Find</span>
+                    </button>
+                </div>
+            </div>
 
-    <header>
-        <div class="brand">
-            <span class="brand-name">TextLens</span>
-            <div class="brand-dot"></div>
-            <span class="brand-tag">Analyzer</span>
-        </div>
-        <div class="header-right">
-            <button class="btn" onclick="copyStats()">Copy stats</button>
-            <button class="btn" onclick="exportText()">Export</button>
-        </div>
-    </header>
+            <div class="header-right">
+                <button class="btn" onclick="copyStats()" title="Copy Stats (Ctrl+Shift+C)">
+                    <span>📋 Copy</span>
+                </button>
+                <button class="btn" onclick="exportText()" title="Export (Ctrl+S)">
+                    <span>💾 Export</span>
+                </button>
+                <button class="btn btn-primary" onclick="clearText()" title="Clear (Esc)">
+                    <span>Clear</span>
+                </button>
+            </div>
+        </header>
 
-    <div class="editor-pane">
-        <span class="pane-label">Input</span>
-        <div class="editor-wrapper">
-            <textarea id="textInput" placeholder="Paste or type your text here…"></textarea>
-            <span class="editor-counter" id="charTicker">0 chars</span>
-        </div>
-        <div class="toolbar">
-            <button class="btn btn-accent" onclick="analyzeText()">Analyze</button>
-            <button class="btn" onclick="toggleCase()">Toggle case</button>
-            <button class="btn" onclick="clearText()">Clear</button>
-            <div class="toolbar-sep"></div>
-            <input class="gen-input" type="number" id="charCountInput" placeholder="Char count…" min="1">
-            <select class="gen-input" id="genMode">
-                <option value="text">Text only</option>
-                <option value="numbers">Numbers only</option>
-                <option value="mixed">Text + Numbers</option>
-            </select>
-            <select class="gen-input" id="genCase">
-                <option value="sentence">Sentence case</option>
-                <option value="lowercase">lowercase</option>
-                <option value="uppercase">UPPERCASE</option>
-                <option value="title">Title Case</option>
-                <option value="simple">Simple</option>
-            </select>
-            <button class="btn" onclick="generateRandom()">Generate</button>
+        <div class="main">
+            <div class="editor-section">
+                <div class="find-bar" id="findBar">
+                    <input type="text" class="find-input" id="findInput" placeholder="Find..." oninput="findInText()">
+                    <input type="text" class="find-input" id="replaceInput" placeholder="Replace..." onkeydown="if(event.key==='Enter')replaceInText()">
+                    <button class="btn" onclick="replaceInText()">Replace</button>
+                    <button class="btn" onclick="replaceAll()">Replace All</button>
+                    <span class="find-stats" id="findStats"></span>
+                    <button class="btn btn-icon" onclick="toggleFind()" style="margin-left: auto;">✕</button>
+                </div>
+
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button class="btn btn-icon" onclick="transformText('upper')" title="UPPERCASE">AA</button>
+                        <button class="btn btn-icon" onclick="transformText('lower')" title="lowercase">aa</button>
+                        <button class="btn btn-icon" onclick="transformText('title')" title="Title Case">Aa</button>
+                        <button class="btn btn-icon" onclick="transformText('sentence')" title="Sentence case">A.</button>
+                    </div>
+                    <div class="toolbar-group">
+                        <button class="btn" onclick="removeExtraSpaces()" title="Trim Spaces">🧹 Trim</button>
+                        <button class="btn" onclick="removeLines()" title="Remove Empty Lines">📄 Compact</button>
+                        <button class="btn" onclick="sortLines()" title="Sort Lines">📊 Sort</button>
+                    </div>
+                    <div class="toolbar-group">
+                        <button class="btn" onclick="extractEmails()" title="Extract Emails">@ Emails</button>
+                        <button class="btn" onclick="extractURLs()" title="Extract URLs">🔗 URLs</button>
+                        <button class="btn" onclick="extractNumbers()" title="Extract Numbers"># Numbers</button>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper">
+                    <textarea id="textInput" placeholder="Paste your text here for instant analysis...&#10;&#10;Shortcuts:&#10;• Ctrl+Enter = Analyze&#10;• Ctrl+F = Find&#10;• Ctrl+Shift+C = Copy Stats&#10;• Esc = Clear" spellcheck="false"></textarea>
+                    <div class="editor-status">
+                        <span class="status-item" id="statusWords">0 words</span>
+                        <span class="status-item" id="statusChars">0 chars</span>
+                        <span class="status-item accent" id="statusTime">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <!-- Hero Stats -->
+                <div class="hero-stats">
+                    <div class="hero-card">
+                        <div class="hero-value accent" id="heroWords">0</div>
+                        <div class="hero-label">Words</div>
+                    </div>
+                    <div class="hero-card">
+                        <div class="hero-value" id="heroChars">0</div>
+                        <div class="hero-label">Characters</div>
+                    </div>
+                    <div class="hero-card">
+                        <div class="hero-value" id="heroTime">—</div>
+                        <div class="hero-label">Read Time</div>
+                    </div>
+                </div>
+
+                <!-- Core Metrics -->
+                <div class="stats-section">
+                    <div class="section-header">
+                        <div class="section-title">📊 Core Metrics</div>
+                        <span class="section-badge">LIVE</span>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Sentences</span>
+                            <span class="detail-value" id="statSentences">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Paragraphs</span>
+                            <span class="detail-value" id="statParagraphs">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Lines</span>
+                            <span class="detail-value" id="statLines">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Unique Words</span>
+                            <span class="detail-value accent" id="statUnique">0</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Character Density</span>
+                            <div style="flex:1; margin-left: 12px;">
+                                <div class="metric-bar">
+                                    <div class="metric-bar-fill" id="densityBar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <span class="detail-value" id="statDensity" style="margin-left: 10px;">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Character Breakdown -->
+                <div class="stats-section">
+                    <div class="section-header">
+                        <div class="section-title">🔤 Characters</div>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Letters</span>
+                            <span class="detail-value" id="statLetters">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Numbers</span>
+                            <span class="detail-value" id="statNumbers">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Spaces</span>
+                            <span class="detail-value" id="statSpaces">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Punctuation</span>
+                            <span class="detail-value" id="statPunct">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Special</span>
+                            <span class="detail-value" id="statSpecial">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">No Spaces</span>
+                            <span class="detail-value" id="statNoSpace">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis -->
+                <div class="stats-section">
+                    <div class="section-header">
+                        <div class="section-title">📈 Analysis</div>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Avg Word Length</span>
+                            <span class="detail-value accent" id="statAvgWord">—</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Avg Sentence</span>
+                            <span class="detail-value" id="statAvgSent">—</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">Longest Word</span>
+                            <span class="detail-value warning" id="statLongest" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Words -->
+                <div class="stats-section">
+                    <div class="section-header">
+                        <div class="section-title">🏆 Top Words</div>
+                        <span class="section-badge" id="vocabBadge">0</span>
+                    </div>
+                    <div class="word-analysis" id="topWordsList">
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div class="empty-text">Start typing to see word analysis</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="stats-pane">
-
-        <div class="reading-hero">
-            <div class="reading-hero-eyebrow">Reading time</div>
-            <div class="reading-hero-val" id="readingTime">—</div>
-            <div class="reading-hero-note">@ 200 wpm average</div>
+    <!-- Generator Panel -->
+    <div class="generator-panel" id="generatorPanel">
+        <div class="panel-header">
+            <span>⚡ Text Generator</span>
+            <button class="panel-close" onclick="toggleGenerator()">×</button>
         </div>
-
-        <div class="stats-section">
-            <div class="section-title">Core</div>
-            <div class="primary-grid">
-                <div class="metric-card">
-                    <div class="metric-val" id="wordCount">0</div>
-                    <div class="metric-lbl">Words</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="charCount">0</div>
-                    <div class="metric-lbl">Chars</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="sentenceCount">0</div>
-                    <div class="metric-lbl">Sentences</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="paragraphCount">0</div>
-                    <div class="metric-lbl">Paragraphs</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="uniqueWords">0</div>
-                    <div class="metric-lbl">Unique</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="lineCount">0</div>
-                    <div class="metric-lbl">Lines</div>
-                </div>
+        <div class="input-group">
+            <label class="input-label">Character Count</label>
+            <input type="number" class="input-field" id="genCount" value="500" min="1">
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label class="input-label">Type</label>
+                <select class="input-field" id="genType">
+                    <option value="text">Text</option>
+                    <option value="numbers">Numbers</option>
+                    <option value="mixed">Mixed</option>
+                    <option value="lorem">Lorem Ipsum</option>
+                    <option value="json">JSON Sample</option>
+                    <option value="code">Code Sample</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Case</label>
+                <select class="input-field" id="genCase">
+                    <option value="lower">lowercase</option>
+                    <option value="upper">UPPERCASE</option>
+                    <option value="title">Title Case</option>
+                    <option value="sentence">Sentence case</option>
+                </select>
             </div>
         </div>
-
-        <div class="stats-section">
-            <div class="section-title">Analysis</div>
-            <div class="stat-row">
-                <span class="stat-row-k">Chars (no spaces)</span>
-                <span class="stat-row-v" id="charNoSpace">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Avg word length</span>
-                <span class="stat-row-v hi" id="avgWordLength">—</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Avg sentence</span>
-                <span class="stat-row-v" id="avgSentenceLength">—</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Longest word</span>
-                <span class="stat-row-v" id="longestWord">—</span>
-            </div>
-        </div>
-
-        <div class="stats-section">
-            <div class="section-title">Characters</div>
-            <div class="stat-row">
-                <span class="stat-row-k">Letters</span>
-                <span class="stat-row-v" id="letterCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Uppercase</span>
-                <span class="stat-row-v" id="upperCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Lowercase</span>
-                <span class="stat-row-v" id="lowerCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Numbers</span>
-                <span class="stat-row-v" id="numberCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Punctuation</span>
-                <span class="stat-row-v" id="punctCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Special chars</span>
-                <span class="stat-row-v" id="specialCount">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-row-k">Spaces</span>
-                <span class="stat-row-v" id="spaceCount">0</span>
-            </div>
-        </div>
-
-        <div class="stats-section">
-            <div class="section-title">Top words</div>
-            <div class="word-chips" id="topWords">
-                <span class="empty">No text yet</span>
-            </div>
-        </div>
-
+        <button class="btn btn-primary" onclick="generateText()" style="width: 100%; justify-content: center;">
+            Generate & Insert
+        </button>
     </div>
-</div>
 
-<div class="toast" id="toast"></div>
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">✓</span>
+        <span id="toastMsg">Action completed</span>
+    </div>
 
-<script>
-let caseState = 'normal';
-document.getElementById('textInput').addEventListener('input', analyzeText);
+    <script>
+        // State
+        let currentText = '';
+        let findMatches = [];
+        let currentMatch = -1;
 
-function toast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 1800);
-}
+        // Initialize
+        document.getElementById('textInput').addEventListener('input', debounce(analyzeText, 100));
+        document.addEventListener('keydown', handleKeyboard);
+        
+        // Auto-analyze on load with sample
+        setTimeout(() => {
+            document.getElementById('textInput').value = "Welcome to TextLens Pro. This advanced text analyzer is designed for QA engineers and developers who need quick, accurate text metrics. Paste any content to see real-time statistics including word count, character analysis, reading time estimates, and vocabulary frequency distributions. Use keyboard shortcuts for blazing fast workflow.";
+            analyzeText();
+        }, 100);
 
-function fmt(n) { return Number(n).toLocaleString(); }
-
-function analyzeText() {
-    const text = document.getElementById('textInput').value;
-    const charCount = text.length;
-    document.getElementById('charTicker').textContent = fmt(charCount) + ' chars';
-
-    const charNoSpace = text.replace(/\s/g,'').length;
-    const spaceCount = (text.match(/\s/g)||[]).length;
-    const words = text.trim().split(/\s+/).filter(w=>w.length>0);
-    const wordCount = text.trim()==='' ? 0 : words.length;
-    const sentences = text.split(/[.!?]+/).filter(s=>s.trim().length>0);
-    const sentenceCount = sentences.length;
-    const paragraphs = text.split(/\n+/).filter(p=>p.trim().length>0);
-    const paragraphCount = paragraphs.length;
-    const lineCount = text.split('\n').length;
-    const upperCount = (text.match(/[A-Z]/g)||[]).length;
-    const lowerCount = (text.match(/[a-z]/g)||[]).length;
-    const letterCount = upperCount + lowerCount;
-    const numberCount = (text.match(/[0-9]/g)||[]).length;
-    const punctCount = (text.match(/[.,!?;:'"()\-–—]/g)||[]).length;
-    const specialCount = Math.max(0, charCount - letterCount - numberCount - spaceCount - punctCount);
-    const totalWordLen = words.reduce((s,w)=>s+w.replace(/[^\w]/g,'').length, 0);
-    const avgWordLength = wordCount > 0 ? (totalWordLen/wordCount).toFixed(1) : null;
-    const longestWord = words.reduce((l,w)=>w.length>l.length?w:l,'');
-    const avgSentenceLength = sentenceCount>0 ? Math.round(wordCount/sentenceCount) : null;
-    const uniqueWords = new Set(words.map(w=>w.toLowerCase().replace(/[^\w]/g,''))).size;
-
-    const rm = wordCount/200;
-    let readingTime = '—';
-    if (wordCount > 0) {
-        if (rm < 1) readingTime = Math.max(1, Math.ceil(rm*60))+'s';
-        else if (rm < 60) { const m=Math.floor(rm),s=Math.round((rm-m)*60); readingTime = s>0?`${m}m ${s}s`:`${m}m`; }
-        else { const h=Math.floor(rm/60),m=Math.round(rm%60); readingTime=`${h}h ${m}m`; }
-    }
-
-    document.getElementById('charCount').textContent = fmt(charCount);
-    document.getElementById('charNoSpace').textContent = fmt(charNoSpace);
-    document.getElementById('wordCount').textContent = fmt(wordCount);
-    document.getElementById('sentenceCount').textContent = fmt(sentenceCount);
-    document.getElementById('paragraphCount').textContent = fmt(paragraphCount);
-    document.getElementById('lineCount').textContent = fmt(lineCount);
-    document.getElementById('readingTime').textContent = readingTime;
-    document.getElementById('avgWordLength').textContent = avgWordLength ? avgWordLength+' ch' : '—';
-    document.getElementById('longestWord').textContent = longestWord || '—';
-    document.getElementById('avgSentenceLength').textContent = avgSentenceLength ? avgSentenceLength+' wds' : '—';
-    document.getElementById('uniqueWords').textContent = fmt(uniqueWords);
-    document.getElementById('letterCount').textContent = fmt(letterCount);
-    document.getElementById('upperCount').textContent = fmt(upperCount);
-    document.getElementById('lowerCount').textContent = fmt(lowerCount);
-    document.getElementById('numberCount').textContent = fmt(numberCount);
-    document.getElementById('punctCount').textContent = fmt(punctCount);
-    document.getElementById('specialCount').textContent = fmt(specialCount);
-    document.getElementById('spaceCount').textContent = fmt(spaceCount);
-
-    updateTopWords(words);
-}
-
-function updateTopWords(words) {
-    const el = document.getElementById('topWords');
-    if (!words.length) { el.innerHTML = '<span class="empty">No text yet</span>'; return; }
-    const freq = {};
-    words.forEach(w => { const c=w.toLowerCase().replace(/[^\w]/g,''); if(c.length>2) freq[c]=(freq[c]||0)+1; });
-    const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12);
-    if (!sorted.length) { el.innerHTML = '<span class="empty">No qualifying words</span>'; return; }
-    el.innerHTML = sorted.map(([w,c])=>`<span class="chip">${w}<span class="chip-n">${c}</span></span>`).join('');
-}
-
-function clearText() {
-    document.getElementById('textInput').value = '';
-    caseState = 'normal';
-    analyzeText();
-    toast('Cleared');
-}
-
-function copyStats() {
-    const s = `TextLens — Text Analysis\n─────────────────────────\nWords:            ${document.getElementById('wordCount').textContent}\nCharacters:       ${document.getElementById('charCount').textContent}\nSentences:        ${document.getElementById('sentenceCount').textContent}\nParagraphs:       ${document.getElementById('paragraphCount').textContent}\nUnique words:     ${document.getElementById('uniqueWords').textContent}\nReading time:     ${document.getElementById('readingTime').textContent}\nAvg word length:  ${document.getElementById('avgWordLength').textContent}\nLongest word:     ${document.getElementById('longestWord').textContent}`;
-    navigator.clipboard.writeText(s).then(()=>toast('Stats copied')).catch(()=>toast('Copy failed'));
-}
-
-function exportText() {
-    const text = document.getElementById('textInput').value;
-    if (!text) { toast('Nothing to export'); return; }
-    const blob = new Blob([text],{type:'text/plain'});
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'),{href:url,download:'text-'+new Date().toISOString().slice(0,10)+'.txt'});
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('Exported');
-}
-
-function toggleCase() {
-    const ta = document.getElementById('textInput');
-    if (!ta.value) return;
-    if (caseState==='normal') { ta.value=ta.value.toUpperCase(); caseState='upper'; toast('UPPERCASE'); }
-    else if (caseState==='upper') { ta.value=ta.value.toLowerCase(); caseState='lower'; toast('lowercase'); }
-    else { ta.value=ta.value.replace(/\w\S*/g,t=>t[0].toUpperCase()+t.slice(1).toLowerCase()); caseState='normal'; toast('Title Case'); }
-    analyzeText();
-}
-
-function generateRandom() {
-    let count = parseInt(document.getElementById('charCountInput').value);
-    if (!count || count <= 0) count = parseInt(document.getElementById('charCount').textContent.replace(/,/g,''));
-    if (!count || isNaN(count) || count <= 0) { toast('Enter a char count'); return; }
-
-    const mode = document.getElementById('genMode').value;
-    const caseMode = document.getElementById('genCase').value;
-    
-    let text = '';
-    
-    if (mode === 'numbers') {
-        text = generateNumbers(count);
-    } else if (mode === 'mixed') {
-        text = generateMixed(count);
-    } else {
-        text = generateText(count); // text only (default)
-    }
-    
-    text = applyCaseMode(text, caseMode);
-    
-    document.getElementById('textInput').value = text;
-    caseState = 'normal';
-    analyzeText();
-    toast('Generated '+fmt(count)+' chars (' + mode + ', ' + caseMode + ')');
-}
-
-function generateNumbers(count) {
-    let result = '';
-    while (result.length < count) {
-        const segmentLen = Math.floor(Math.random() * 8) + 3;
-        let segment = '';
-        for (let i = 0; i < segmentLen; i++) {
-            segment += Math.floor(Math.random() * 10);
+        function debounce(fn, ms) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn.apply(this, args), ms);
+            };
         }
-        if (result.length > 0) result += ' ';
-        result += segment;
-    }
-    return result.slice(0, count);
-}
 
-function generateMixed(count) {
-    const vowels = 'aeiou';
-    const consonants = 'bcdfghjklmnpqrstvwxyz';
-    const numbers = '0123456789';
-    const wordList = [];
-    let chars = 0;
-    
-    while (chars < count) {
-        if (Math.random() < 0.15) {
-            // Generate a number
-            const numLen = Math.floor(Math.random() * 4) + 2;
-            let num = '';
-            for (let i = 0; i < numLen; i++) {
-                num += numbers[Math.floor(Math.random() * numbers.length)];
+        function handleKeyboard(e) {
+            // Ctrl/Cmd + Enter = Analyze
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                analyzeText();
+                toast('Analysis refreshed');
             }
-            wordList.push(num);
-            chars += num.length + 1;
-        } else {
-            // Generate a word
-            const wlen = Math.floor(Math.random() * 7) + 2;
-            let w = '';
-            for (let i = 0; i < wlen; i++) {
-                w += i % 2 === 0 ? consonants[Math.floor(Math.random() * consonants.length)] : vowels[Math.floor(Math.random() * vowels.length)];
+            // Ctrl/Cmd + Shift + C = Copy stats
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                copyStats();
             }
-            wordList.push(w);
-            chars += w.length + 1;
+            // Ctrl/Cmd + F = Find
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                toggleFind();
+            }
+            // Esc = Clear or Close panels
+            if (e.key === 'Escape') {
+                if (document.getElementById('generatorPanel').classList.contains('show')) {
+                    toggleGenerator();
+                } else if (document.getElementById('findBar').classList.contains('show')) {
+                    toggleFind();
+                } else {
+                    clearText();
+                }
+            }
         }
-        if (chars >= count) break;
-    }
-    
-    return wordList.join(' ').slice(0, count);
-}
 
-function generateText(count) {
-    const vowels = 'aeiou';
-    const consonants = 'bcdfghjklmnpqrstvwxyz';
-    const wordList = [];
-    let chars = 0;
-    
-    while (chars < count) {
-        const wlen = Math.floor(Math.random() * 7) + 2;
-        let w = '';
-        for (let i = 0; i < wlen; i++) {
-            w += i % 2 === 0 ? consonants[Math.floor(Math.random() * consonants.length)] : vowels[Math.floor(Math.random() * vowels.length)];
+        function analyzeText() {
+            const text = document.getElementById('textInput').value;
+            currentText = text;
+            
+            // Basic counts
+            const chars = text.length;
+            const charsNoSpace = text.replace(/\s/g, '').length;
+            const words = text.trim() ? text.trim().split(/\s+/).filter(w => w.length > 0) : [];
+            const wordCount = words.length;
+            
+            // Sentences (improved regex)
+            const sentences = text.split(/[.!?]+(?=\s|$)/).filter(s => s.trim().length > 0);
+            const sentenceCount = sentences.length;
+            
+            // Paragraphs
+            const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            const paragraphCount = paragraphs.length || (text.trim() ? 1 : 0);
+            
+            // Lines
+            const lineCount = text.split('\n').length;
+            
+            // Character types
+            const letters = (text.match(/[a-zA-Z]/g) || []).length;
+            const numbers = (text.match(/[0-9]/g) || []).length;
+            const spaces = (text.match(/\s/g) || []).length;
+            const punct = (text.match(/[.,!?;:'"()[\]{}]/g) || []).length;
+            const special = chars - letters - numbers - spaces - punct;
+            
+            // Calculated metrics
+            const avgWordLen = wordCount > 0 ? (letters / wordCount).toFixed(1) : '—';
+            const avgSentLen = sentenceCount > 0 ? Math.round(wordCount / sentenceCount) : '—';
+            const longestWord = words.reduce((longest, w) => w.length > longest.length ? w.replace(/[^\w]/g, '') : longest, '—');
+            const uniqueWords = new Set(words.map(w => w.toLowerCase().replace(/[^\w]/g, ''))).size;
+            const density = chars > 0 ? Math.round((charsNoSpace / chars) * 100) : 0;
+            
+            // Reading time (200 wpm)
+            let readTime = '—';
+            if (wordCount > 0) {
+                const minutes = wordCount / 200;
+                if (minutes < 1) {
+                    readTime = Math.ceil(minutes * 60) + 's';
+                } else if (minutes < 60) {
+                    const m = Math.floor(minutes);
+                    const s = Math.round((minutes - m) * 60);
+                    readTime = s > 0 ? `${m}m ${s}s` : `${m}m`;
+                } else {
+                    const h = Math.floor(minutes / 60);
+                    const m = Math.round(minutes % 60);
+                    readTime = `${h}h ${m}m`;
+                }
+            }
+            
+            // Update Hero Stats
+            document.getElementById('heroWords').textContent = formatNumber(wordCount);
+            document.getElementById('heroChars').textContent = formatNumber(chars);
+            document.getElementById('heroTime').textContent = readTime;
+            
+            // Update Status Bar
+            document.getElementById('statusWords').textContent = formatNumber(wordCount) + ' words';
+            document.getElementById('statusChars').textContent = formatNumber(chars) + ' chars';
+            document.getElementById('statusTime').textContent = readTime === '—' ? '—' : readTime + ' read';
+            
+            // Update Core Metrics
+            document.getElementById('statSentences').textContent = formatNumber(sentenceCount);
+            document.getElementById('statParagraphs').textContent = formatNumber(paragraphCount);
+            document.getElementById('statLines').textContent = formatNumber(lineCount);
+            document.getElementById('statUnique').textContent = formatNumber(uniqueWords);
+            document.getElementById('statDensity').textContent = density + '%';
+            document.getElementById('densityBar').style.width = density + '%';
+            
+            // Update Character Breakdown
+            document.getElementById('statLetters').textContent = formatNumber(letters);
+            document.getElementById('statNumbers').textContent = formatNumber(numbers);
+            document.getElementById('statSpaces').textContent = formatNumber(spaces);
+            document.getElementById('statPunct').textContent = formatNumber(punct);
+            document.getElementById('statSpecial').textContent = formatNumber(special);
+            document.getElementById('statNoSpace').textContent = formatNumber(charsNoSpace);
+            
+            // Update Analysis
+            document.getElementById('statAvgWord').textContent = avgWordLen + (avgWordLen !== '—' ? ' ch' : '');
+            document.getElementById('statAvgSent').textContent = avgSentLen + (avgSentLen !== '—' ? ' wds' : '');
+            document.getElementById('statLongest').textContent = longestWord;
+            
+            // Update Top Words
+            updateTopWords(words);
+            
+            // Update vocab badge
+            document.getElementById('vocabBadge').textContent = uniqueWords + ' unique';
         }
-        wordList.push(w);
-        chars += w.length + 1;
-        if (chars >= count) break;
-    }
-    
-    let text = wordList.join(' ').slice(0, count);
-    // Add some punctuation
-    text = text.replace(/(\w{20,35})\s/g, '$1. ');
-    return text;
-}
 
-function applyCaseMode(text, caseMode) {
-    switch(caseMode) {
-        case 'uppercase':
-            return text.toUpperCase();
-        case 'lowercase':
-            return text.toLowerCase();
-        case 'title':
-            return text.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
-        case 'sentence':
-            // Capitalize first letter of sentences
-            return text.replace(/(^|\.\s+)([a-z])/g, (m, prefix, letter) => prefix + letter.toUpperCase()).replace(/^(.)/, m => m.toUpperCase());
-        case 'simple':
-            // All lowercase except first character
-            return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-        default:
-            return text;
-    }
-}
+        function updateTopWords(words) {
+            const container = document.getElementById('topWordsList');
+            
+            if (words.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-text">Start typing to see word analysis</div>
+                    </div>`;
+                return;
+            }
+            
+            // Calculate frequencies (ignore words <= 2 chars)
+            const freq = {};
+            let maxCount = 0;
+            words.forEach(w => {
+                const clean = w.toLowerCase().replace(/[^\w]/g, '');
+                if (clean.length > 2) {
+                    freq[clean] = (freq[clean] || 0) + 1;
+                    maxCount = Math.max(maxCount, freq[clean]);
+                }
+            });
+            
+            const sorted = Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            if (sorted.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-text">No significant words found</div>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = sorted.map(([word, count], index) => {
+                const percentage = (count / maxCount) * 100;
+                return `
+                    <div class="word-bar">
+                        <div class="word-bar-fill" style="width: ${percentage}%"></div>
+                        <span class="word-rank">${index + 1}</span>
+                        <span class="word-text">${escapeHtml(word)}</span>
+                        <span class="word-count">${count}</span>
+                    </div>
+                `;
+            }).join('');
+        }
 
-analyzeText();
-</script>
+        function formatNumber(n) {
+            return n.toLocaleString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Text Transformations
+        function transformText(type) {
+            const ta = document.getElementById('textInput');
+            const text = ta.value;
+            if (!text) return;
+            
+            let transformed;
+            switch(type) {
+                case 'upper':
+                    transformed = text.toUpperCase();
+                    break;
+                case 'lower':
+                    transformed = text.toLowerCase();
+                    break;
+                case 'title':
+                    transformed = text.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+                    break;
+                case 'sentence':
+                    transformed = text.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+                    break;
+            }
+            
+            ta.value = transformed;
+            analyzeText();
+            toast(`Transformed to ${type} case`);
+        }
+
+        function removeExtraSpaces() {
+            const ta = document.getElementById('textInput');
+            ta.value = ta.value.replace(/\s+/g, ' ').trim();
+            analyzeText();
+            toast('Extra spaces removed');
+        }
+
+        function removeLines() {
+            const ta = document.getElementById('textInput');
+            ta.value = ta.value.split('\n').filter(line => line.trim()).join('\n');
+            analyzeText();
+            toast('Empty lines removed');
+        }
+
+        function sortLines() {
+            const ta = document.getElementById('textInput');
+            const lines = ta.value.split('\n');
+            const sorted = lines.sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}));
+            ta.value = sorted.join('\n');
+            analyzeText();
+            toast('Lines sorted alphabetically');
+        }
+
+        // Extractors
+        function extractEmails() {
+            const text = document.getElementById('textInput').value;
+            const emails = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+            if (emails.length) {
+                document.getElementById('textInput').value = emails.join('\n');
+                analyzeText();
+                toast(`Extracted ${emails.length} emails`);
+            } else {
+                toast('No emails found');
+            }
+        }
+
+        function extractURLs() {
+            const text = document.getElementById('textInput').value;
+            const urls = text.match(/https?:\/\/[^\s]+|www\.[^\s]+/g) || [];
+            if (urls.length) {
+                document.getElementById('textInput').value = urls.join('\n');
+                analyzeText();
+                toast(`Extracted ${urls.length} URLs`);
+            } else {
+                toast('No URLs found');
+            }
+        }
+
+        function extractNumbers() {
+            const text = document.getElementById('textInput').value;
+            const numbers = text.match(/\d+/g) || [];
+            if (numbers.length) {
+                document.getElementById('textInput').value = numbers.join('\n');
+                analyzeText();
+                toast(`Extracted ${numbers.length} numbers`);
+            } else {
+                toast('No numbers found');
+            }
+        }
+
+        // Find/Replace
+        function toggleFind() {
+            const bar = document.getElementById('findBar');
+            bar.classList.toggle('show');
+            if (bar.classList.contains('show')) {
+                document.getElementById('findInput').focus();
+            }
+        }
+
+        function findInText() {
+            const search = document.getElementById('findInput').value;
+            const text = document.getElementById('textInput').value;
+            const stats = document.getElementById('findStats');
+            
+            if (!search) {
+                stats.textContent = '';
+                return;
+            }
+            
+            const regex = new RegExp(escapeRegex(search), 'gi');
+            const matches = text.match(regex) || [];
+            stats.textContent = `${matches.length} matches`;
+        }
+
+        function replaceInText() {
+            const search = document.getElementById('findInput').value;
+            const replace = document.getElementById('replaceInput').value;
+            const ta = document.getElementById('textInput');
+            
+            if (!search) return;
+            
+            const regex = new RegExp(escapeRegex(search), 'g');
+            const count = (ta.value.match(regex) || []).length;
+            ta.value = ta.value.replace(regex, replace);
+            analyzeText();
+            toast(`Replaced ${count} occurrence${count !== 1 ? 's' : ''}`);
+        }
+
+        function replaceAll() {
+            replaceInText();
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Generator
+        function toggleGenerator() {
+            const panel = document.getElementById('generatorPanel');
+            panel.classList.toggle('show');
+        }
+
+        function generateText() {
+            const count = parseInt(document.getElementById('genCount').value) || 500;
+            const type = document.getElementById('genType').value;
+            const caseMode = document.getElementById('genCase').value;
+            
+            let text = '';
+            
+            switch(type) {
+                case 'text':
+                    text = generateRandomText(count);
+                    break;
+                case 'numbers':
+                    text = generateNumbers(count);
+                    break;
+                case 'mixed':
+                    text = generateMixed(count);
+                    break;
+                case 'lorem':
+                    text = generateLorem(count);
+                    break;
+                case 'json':
+                    text = generateJSON(count);
+                    break;
+                case 'code':
+                    text = generateCode(count);
+                    break;
+            }
+            
+            // Apply case
+            switch(caseMode) {
+                case 'upper':
+                    text = text.toUpperCase();
+                    break;
+                case 'lower':
+                    text = text.toLowerCase();
+                    break;
+                case 'title':
+                    text = text.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+                    break;
+            }
+            
+            document.getElementById('textInput').value = text;
+            analyzeText();
+            toggleGenerator();
+            toast(`Generated ${type} text (${count} chars)`);
+        }
+
+        function generateRandomText(count) {
+            const words = ['lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna', 'aliqua', 'ut', 'enim', 'ad', 'minim', 'veniam', 'quis', 'nostrud', 'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip', 'ex', 'ea', 'commodo', 'consequat', 'duis', 'aute', 'irure', 'in', 'reprehenderit', 'voluptate', 'velit', 'esse', 'cillum', 'fugiat', 'nulla', 'pariatur', 'excepteur', 'sint', 'occaecat', 'cupidatat', 'non', 'proident', 'sunt', 'culpa', 'qui', 'officia', 'deserunt', 'mollit', 'anim', 'id', 'est', 'laborum'];
+            let result = '';
+            while (result.length < count) {
+                const word = words[Math.floor(Math.random() * words.length)];
+                if (result.length > 0) result += ' ';
+                result += word;
+            }
+            return result.charAt(0).toUpperCase() + result.slice(1) + '.';
+        }
+
+        function generateNumbers(count) {
+            let result = '';
+            while (result.length < count) {
+                if (result.length > 0) result += ' ';
+                result += Math.floor(Math.random() * 1000000).toString();
+            }
+            return result.slice(0, count);
+        }
+
+        function generateMixed(count) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < count; i++) {
+                if (i > 0 && i % 5 === 0) result += ' ';
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function generateLorem(count) {
+            const paragraphs = [
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+                "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            ];
+            let result = '';
+            while (result.length < count) {
+                result += paragraphs[Math.floor(Math.random() * paragraphs.length)] + ' ';
+            }
+            return result.slice(0, count);
+        }
+
+        function generateJSON(count) {
+            const templates = [
+                '{"id": 1, "name": "John Doe", "email": "john@example.com", "active": true}',
+                '{"id": 2, "name": "Jane Smith", "email": "jane@example.com", "active": false}',
+                '{"users": [{"name": "Alice"}, {"name": "Bob"}], "count": 2}',
+                '{"status": "success", "data": {"id": 123, "value": "test"}}'
+            ];
+            let result = '';
+            while (result.length < count) {
+                result += templates[Math.floor(Math.random() * templates.length)] + '\n';
+            }
+            return result.slice(0, count);
+        }
+
+        function generateCode(count) {
+            const lines = [
+                'function processData(input) {',
+                '  const result = input.map(x => x * 2);',
+                '  return result.filter(x => x > 10);',
+                '}',
+                'const data = [1, 2, 3, 4, 5];',
+                'console.log(processData(data));',
+                'class User {',
+                '  constructor(name) { this.name = name; }',
+                '  greet() { return `Hello ${this.name}`; }',
+                '}'
+            ];
+            let result = '';
+            while (result.length < count) {
+                result += lines[Math.floor(Math.random() * lines.length)] + '\n';
+            }
+            return result.slice(0, count);
+        }
+
+        // Utilities
+        function clearText() {
+            document.getElementById('textInput').value = '';
+            analyzeText();
+            toast('Editor cleared');
+        }
+
+        function copyStats() {
+            const stats = `TextLens Pro Analysis
+━━━━━━━━━━━━━━━━━━━━━
+Words:      ${document.getElementById('heroWords').textContent}
+Characters: ${document.getElementById('heroChars').textContent}
+Reading:    ${document.getElementById('heroTime').textContent}
+Sentences:  ${document.getElementById('statSentences').textContent}
+Paragraphs: ${document.getElementById('statParagraphs').textContent}
+Unique:     ${document.getElementById('statUnique').textContent}
+Avg Word:   ${document.getElementById('statAvgWord').textContent}
+Longest:    ${document.getElementById('statLongest').textContent}`;
+            
+            navigator.clipboard.writeText(stats).then(() => {
+                toast('Statistics copied to clipboard');
+            });
+        }
+
+        function exportText() {
+            const text = document.getElementById('textInput').value;
+            if (!text) {
+                toast('Nothing to export');
+                return;
+            }
+            
+            const blob = new Blob([text], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `text-analysis-${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('File exported successfully');
+        }
+
+        function toast(message) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = message;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+    </script>
 </body>
 </html>
